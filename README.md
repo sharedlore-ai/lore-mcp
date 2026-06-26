@@ -10,6 +10,8 @@ The server is stateless — every tool call hits the lore-api GraphQL endpoint o
 
 | Tool | What it does |
 | --- | --- |
+| `lore_projects` | List the projects in the token's org (the token fixes the org). Returns the org name + each project's `slug`/`name`. Powers `/lore:init`. |
+| `lore_create_project` | Create a project in the token's org (`name`, optional `slug` — derived from the name if omitted). Returns the created `slug`/`name`. |
 | `lore_start` | Team `/start`: loads the project briefing (area context docs + recent captures). Optional `directive`. |
 | `lore_capture` | Append a session capture to a node (by `path` or id). Append-only; triggers server-side context synthesis. |
 | `lore_adr` | Create/update an ADR node by path (kind `adr`). |
