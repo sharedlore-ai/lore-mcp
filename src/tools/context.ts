@@ -14,7 +14,7 @@ export function registerContext(server: McpServer, client: LoreClient): void {
     "Fetch the derived area context document at a path (a context-kind node).",
     {
       path: z.string().describe("Node path, e.g. bot/exits."),
-      project: z.string().optional().describe("Project slug (defaults to LORE_PROJECT)."),
+      project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
     async ({ path, project }) => {
       const projectId = await client.resolveProjectId(project);

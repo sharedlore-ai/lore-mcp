@@ -1,14 +1,40 @@
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join, parse } from "node:path";
+
 export interface LoreConfig {
   apiUrl: string;
   apiToken: string;
   defaultProject: string;
 }
 
+export function readLorerc(startDir: string = process.cwd()): string {
+  let dir = startDir;
+  const root = parse(dir).root;
+  while (true) {
+    const candidate = join(dir, ".lorerc");
+    if (existsSync(candidate)) {
+      try {
+        const parsed = JSON.parse(readFileSync(candidate, "utf8")) as { project?: unknown };
+        if (typeof parsed.project === "string" && parsed.project.trim()) {
+          return parsed.project.trim();
+        }
+      } catch {
+        // Ignore an unreadable/invalid .lorerc and keep walking up.
+      }
+    }
+    if (dir === root) break;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return "";
+}
+
 export function loadConfig(): LoreConfig {
   return {
     apiUrl: process.env.LORE_API_URL ?? "http://localhost:3030/graphql",
     apiToken: process.env.LORE_API_TOKEN ?? "",
-    defaultProject: process.env.LORE_PROJECT ?? "",
+    defaultProject: readLorerc() || process.env.LORE_PROJECT || "",
   };
 }
 
@@ -85,7 +111,7 @@ export class LoreClient {
     const target = (slug ?? this.config.defaultProject).trim();
     if (!target) {
       throw new LoreError(
-        "No project specified and LORE_PROJECT is not set. Pass a project slug or set LORE_PROJECT.",
+        "No project specified. Pass a project slug, add a .lorerc ({ \"project\": \"<slug>\" }) at your repo root, or set LORE_PROJECT.",
       );
     }
 

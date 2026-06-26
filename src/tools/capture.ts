@@ -20,7 +20,7 @@ export function registerCapture(server: McpServer, client: LoreClient): void {
       node: z.string().describe("Node path (e.g. bot/exits) or node id to attach the capture to."),
       body: z.string().describe("The full capture body — what happened, decisions, findings."),
       summary: z.string().optional().describe("Optional one-line summary."),
-      project: z.string().optional().describe("Project slug (defaults to LORE_PROJECT)."),
+      project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
     async ({ node, body, summary, project }) => {
       const projectId = await client.resolveProjectId(project);

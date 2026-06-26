@@ -20,7 +20,10 @@ The server is stateless — every tool call hits the lore-api GraphQL endpoint o
 | `lore_context` | Fetch the derived area context document at a `path`. |
 | `lore_search` | Search nodes by path substring (optional `kind`). |
 
-Every write/read tool accepts an optional `project` slug; if omitted it falls back to `LORE_PROJECT`.
+Every write/read tool accepts an optional `project` slug. Resolution precedence when a tool
+omits `project`: the `.lorerc` file at the repo root (a `{ "project": "<slug>" }` JSON file,
+found by walking up parent directories from the server's cwd, like git finds `.git`) → the
+`LORE_PROJECT` env var. Run `lore link <slug>` (from `@sharedlore/cli`) to write `.lorerc`.
 
 ## Configuration (env)
 
@@ -28,7 +31,7 @@ Every write/read tool accepts an optional `project` slug; if omitted it falls ba
 | --- | --- | --- |
 | `LORE_API_URL` | `http://localhost:3030/graphql` | GraphQL endpoint. |
 | `LORE_API_TOKEN` | — | The `lore_sk_...` API token. Sent as `Authorization: Bearer <token>`. The token scopes the org server-side, so no org header is needed. |
-| `LORE_PROJECT` | — | Default project slug used when a tool omits `project`. |
+| `LORE_PROJECT` | — | Fallback project slug used when a tool omits `project` and no `.lorerc` is found. Prefer `.lorerc` (per-repo) over this. |
 
 ### Getting a token
 
@@ -47,8 +50,7 @@ return a clear "not authorized" message.
       "args": ["-y", "@sharedlore/mcp"],
       "env": {
         "LORE_API_URL": "https://lore.example.com/graphql",
-        "LORE_API_TOKEN": "lore_sk_xxx",
-        "LORE_PROJECT": "my-project-slug"
+        "LORE_API_TOKEN": "lore_sk_xxx"
       }
     }
   }

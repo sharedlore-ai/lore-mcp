@@ -25,7 +25,7 @@ export function registerSearch(server: McpServer, client: LoreClient): void {
         .enum(["folder", "context", "adr", "log", "todo", "plan", "memory"])
         .optional()
         .describe("Optional kind filter."),
-      project: z.string().optional().describe("Project slug (defaults to LORE_PROJECT)."),
+      project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
     async ({ query, kind, project }) => {
       const projectId = await client.resolveProjectId(project);

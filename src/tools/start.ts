@@ -50,7 +50,7 @@ export function registerStart(server: McpServer, client: LoreClient): void {
         .string()
         .optional()
         .describe("Optional focus directive to frame what you are about to work on."),
-      project: z.string().optional().describe("Project slug (defaults to LORE_PROJECT)."),
+      project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
     async ({ directive, project }) => {
       const projectId = await client.resolveProjectId(project);

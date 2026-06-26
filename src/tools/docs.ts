@@ -32,7 +32,7 @@ function registerOne(server: McpServer, client: LoreClient, spec: Spec): void {
       title: z.string().describe("Human-readable title."),
       body: z.string().describe("Markdown body of the document."),
       parentId: z.string().optional().describe("Optional parent node id."),
-      project: z.string().optional().describe("Project slug (defaults to LORE_PROJECT)."),
+      project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
     async ({ path, title, body, parentId, project }) => {
       const projectId = await client.resolveProjectId(project);
