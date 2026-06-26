@@ -9,6 +9,7 @@ import { registerTree } from "./tools/tree.js";
 import { registerContext } from "./tools/context.js";
 import { registerSearch } from "./tools/search.js";
 import { registerProjects } from "./tools/projects.js";
+import { registerManage } from "./tools/manage.js";
 
 async function main(): Promise<void> {
   const config = loadConfig();
@@ -26,6 +27,7 @@ async function main(): Promise<void> {
   registerContext(server, client);
   registerSearch(server, client);
   registerProjects(server, client);
+  registerManage(server, client);
 
   const transport = new StdioServerTransport();
   await server.connect(transport);

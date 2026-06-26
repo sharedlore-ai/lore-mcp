@@ -157,13 +157,19 @@ export class LoreClient {
 
     if (/^\d+$/.test(value)) return value;
 
-    const found = await this.graphql<{ nodeByPath: { id: string } | null }>(
-      `query NodeId($projectId: ID!, $path: String!) {
-        nodeByPath(projectId: $projectId, path: $path) { id }
-      }`,
-      { projectId, path: value },
-    );
-    if (found.nodeByPath) return found.nodeByPath.id;
+    try {
+      const found = await this.graphql<{ nodeByPath: { id: string } | null }>(
+        `query NodeId($projectId: ID!, $path: String!) {
+          nodeByPath(projectId: $projectId, path: $path) { id }
+        }`,
+        { projectId, path: value },
+      );
+      if (found.nodeByPath) return found.nodeByPath.id;
+    } catch (err) {
+      // nodeByPath returns a non-null NodeType, so a missing node raises
+      // "Node not found" rather than returning null — fall through to create.
+      if (!(err instanceof LoreError && /not found/i.test(err.message))) throw err;
+    }
 
     const created = await this.graphql<{ upsertNode: { node: { id: string } } }>(
       `mutation BootstrapArea($input: UpsertNodeInput!) {
