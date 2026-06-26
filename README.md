@@ -44,12 +44,15 @@ return a clear "not authorized" message.
 
 ## Connect (`.mcp.json`)
 
+Install straight from the public GitHub repo — `npx` clones and builds it on first run (a
+`prepare` script runs `tsc`), so nothing needs to be published:
+
 ```json
 {
   "mcpServers": {
     "sharedlore": {
       "command": "npx",
-      "args": ["-y", "@sharedlore/mcp"],
+      "args": ["-y", "github:sharedlore-ai/lore-mcp"],
       "env": {
         "LORE_API_URL": "https://lore.example.com/graphql",
         "LORE_API_TOKEN": "lore_sk_xxx"
@@ -58,6 +61,12 @@ return a clear "not authorized" message.
   }
 }
 ```
+
+Variants (same `env` in all cases):
+
+- **npm** (once published): `"args": ["-y", "@sharedlore/mcp"]`.
+- **Local checkout** (no npx): `"command": "node", "args": ["/abs/path/lore-mcp/dist/index.js"]` — run `npm run build` first.
+- **Local lore-api**: set `LORE_API_URL` to `http://localhost:3030/graphql`.
 
 ## Develop
 
