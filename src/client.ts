@@ -150,6 +150,34 @@ export class LoreClient {
 
     return data.nodeByPath.id;
   }
+
+  async resolveOrCreateNodeId(projectId: string, nodeOrPath: string): Promise<string> {
+    const value = nodeOrPath.trim();
+    if (!value) throw new LoreError("A node id or path is required.");
+
+    if (/^\d+$/.test(value)) return value;
+
+    const found = await this.graphql<{ nodeByPath: { id: string } | null }>(
+      `query NodeId($projectId: ID!, $path: String!) {
+        nodeByPath(projectId: $projectId, path: $path) { id }
+      }`,
+      { projectId, path: value },
+    );
+    if (found.nodeByPath) return found.nodeByPath.id;
+
+    const created = await this.graphql<{ upsertNode: { node: { id: string } } }>(
+      `mutation BootstrapArea($input: UpsertNodeInput!) {
+        upsertNode(input: $input) { node { id } }
+      }`,
+      { input: { projectId, path: value, kind: "folder", title: titleFromPath(value) } },
+    );
+    return created.upsertNode.node.id;
+  }
+}
+
+function titleFromPath(path: string): string {
+  const leaf = path.split("/").filter(Boolean).pop() ?? path;
+  return leaf.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function humanizeError(message: string): string {

@@ -24,7 +24,7 @@ export function registerCapture(server: McpServer, client: LoreClient): void {
     },
     async ({ node, body, summary, project }) => {
       const projectId = await client.resolveProjectId(project);
-      const nodeId = await client.resolveNodeId(projectId, node);
+      const nodeId = await client.resolveOrCreateNodeId(projectId, node);
 
       const data = await client.graphql<{
         captureSession: {
