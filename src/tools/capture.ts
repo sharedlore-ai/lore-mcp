@@ -15,16 +15,16 @@ const MUTATION = `mutation Capture($input: CaptureSessionInput!) {
 export function registerCapture(server: McpServer, client: LoreClient): void {
   server.tool(
     "lore_capture",
-    "Append a session capture to an area by path or id. Creates the area node (a folder) if it does not exist yet, so a brand-new/empty project bootstraps on first capture. Append-only; triggers server-side context synthesis.",
+    "Append an append-only session - project- and user-scoped. A session is one unit of work you did (a ticket / bug / feature); you can have several per day across projects. By default it is a project-level session (no node) - omit `node`. Optionally pass `node` to also attach it to an area. The backend only stores it; nothing is synthesized.",
     {
-      node: z.string().describe("Area path (e.g. bot/exits) or node id. Created as a folder if it doesn't exist."),
-      body: z.string().describe("The full capture body - what happened, decisions, findings."),
-      summary: z.string().optional().describe("Optional one-line summary."),
+      body: z.string().describe("The full session body - what was done, decisions, findings."),
+      summary: z.string().optional().describe("Optional one-line summary (e.g. the ticket / feature)."),
+      node: z.string().optional().describe("Optional area path or node id to attach the session to. Omit for a plain project-level session. Created as a folder if it doesn't exist."),
       project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
-    async ({ node, body, summary, project }) => {
+    async ({ body, summary, node, project }) => {
       const projectId = await client.resolveProjectId(project);
-      const nodeId = await client.resolveOrCreateNodeId(projectId, node);
+      const nodeId = node ? await client.resolveOrCreateNodeId(projectId, node) : undefined;
 
       const data = await client.graphql<{
         captureSession: {
@@ -33,12 +33,12 @@ export function registerCapture(server: McpServer, client: LoreClient): void {
       }>(MUTATION, { input: { projectId, nodeId, body, summary } });
 
       const s = data.captureSession.session;
-      const where = s.node ? `${s.node.title} [${s.node.path}]` : `node ${nodeId}`;
+      const where = s.node ? `area ${s.node.title} [${s.node.path}]` : "the project";
       return {
         content: [
           {
             type: "text",
-            text: `Captured session ${s.id} on ${where} at ${s.capturedAt.slice(0, 19)}. Context synthesis triggered.`,
+            text: `Captured session ${s.id} on ${where} at ${s.capturedAt.slice(0, 19)}.`,
           },
         ],
       };
