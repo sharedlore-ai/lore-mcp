@@ -5,19 +5,31 @@ export interface LoreConfig {
   apiUrl: string;
   apiToken: string;
   defaultProject: string;
+  organization: string;
 }
 
-export function readLorerc(startDir: string = process.cwd()): string {
+export interface Lorerc {
+  project: string;
+  organization: string;
+}
+
+// Tokens are user-scoped, so the org is resolved per-repo from .lorerc and sent
+// to the API on each request. .lorerc carries both `organization` and `project`.
+export function readLorerc(startDir: string = process.cwd()): Lorerc {
   let dir = startDir;
   const root = parse(dir).root;
   while (true) {
     const candidate = join(dir, ".lorerc");
     if (existsSync(candidate)) {
       try {
-        const parsed = JSON.parse(readFileSync(candidate, "utf8")) as { project?: unknown };
-        if (typeof parsed.project === "string" && parsed.project.trim()) {
-          return parsed.project.trim();
-        }
+        const parsed = JSON.parse(readFileSync(candidate, "utf8")) as {
+          project?: unknown;
+          organization?: unknown;
+        };
+        const project = typeof parsed.project === "string" ? parsed.project.trim() : "";
+        const organization =
+          typeof parsed.organization === "string" ? parsed.organization.trim() : "";
+        if (project || organization) return { project, organization };
       } catch {
         // Ignore an unreadable/invalid .lorerc and keep walking up.
       }
@@ -27,14 +39,16 @@ export function readLorerc(startDir: string = process.cwd()): string {
     if (parent === dir) break;
     dir = parent;
   }
-  return "";
+  return { project: "", organization: "" };
 }
 
 export function loadConfig(): LoreConfig {
+  const rc = readLorerc();
   return {
-    apiUrl: process.env.LORE_API_URL ?? "http://localhost:3030/graphql",
+    apiUrl: process.env.LORE_API_URL ?? "https://api.sharedlore.com/graphql",
     apiToken: process.env.LORE_API_TOKEN ?? "",
-    defaultProject: readLorerc() || process.env.LORE_PROJECT || "",
+    defaultProject: rc.project || process.env.LORE_PROJECT || "",
+    organization: rc.organization || process.env.LORE_ORGANIZATION || "",
   };
 }
 
@@ -59,12 +73,20 @@ export class LoreClient {
     return this.config.defaultProject;
   }
 
-  async graphql<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
+  async graphql<T>(
+    query: string,
+    variables: Record<string, unknown> = {},
+    orgSlug?: string,
+  ): Promise<T> {
     if (!this.config.apiToken) {
       throw new LoreError(
         "Missing LORE_API_TOKEN. Create one in the SharedLore dashboard (API tokens) and set it in the MCP env.",
       );
     }
+
+    // User-scoped token: tell the API which org this request is for (from .lorerc,
+    // or an explicit override for org-picking flows like lore_create_project).
+    const org = orgSlug ?? this.config.organization;
 
     let res: Response;
     try {
@@ -73,6 +95,7 @@ export class LoreClient {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${this.config.apiToken}`,
+          ...(org ? { "X-Organization-Slug": org } : {}),
         },
         body: JSON.stringify({ query, variables }),
       });
