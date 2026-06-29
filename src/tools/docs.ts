@@ -8,7 +8,7 @@ const MUTATION = `mutation Upsert($input: UpsertNodeInput!) {
   }
 }`;
 
-type Kind = "adr" | "log" | "todo" | "plan";
+type Kind = "adr" | "log" | "todo" | "plan" | "memory";
 
 interface Spec {
   tool: string;
@@ -21,6 +21,7 @@ const SPECS: Spec[] = [
   { tool: "lore_log", kind: "log", label: "log entry" },
   { tool: "lore_todo", kind: "todo", label: "TODO" },
   { tool: "lore_plan", kind: "plan", label: "plan" },
+  { tool: "lore_memory", kind: "memory", label: "memory (durable fact/learning)" },
 ];
 
 function registerOne(server: McpServer, client: LoreClient, spec: Spec): void {
