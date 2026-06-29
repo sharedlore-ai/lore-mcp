@@ -20,9 +20,10 @@ export function registerCapture(server: McpServer, client: LoreClient): void {
       body: z.string().describe("The full session body - what was done, decisions, findings."),
       summary: z.string().optional().describe("Optional one-line summary (e.g. the ticket / feature)."),
       node: z.string().optional().describe("Optional area path or node id to attach the session to. Omit for a plain project-level session. Created as a folder if it doesn't exist."),
+      capturedAt: z.string().optional().describe("Optional ISO8601 timestamp. Use when importing past sessions to preserve their original date; defaults to now."),
       project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),
     },
-    async ({ body, summary, node, project }) => {
+    async ({ body, summary, node, capturedAt, project }) => {
       const projectId = await client.resolveProjectId(project);
       const nodeId = node ? await client.resolveOrCreateNodeId(projectId, node) : undefined;
 
@@ -30,7 +31,7 @@ export function registerCapture(server: McpServer, client: LoreClient): void {
         captureSession: {
           session: { id: string; capturedAt: string; node: { path: string; title: string } | null };
         };
-      }>(MUTATION, { input: { projectId, nodeId, body, summary } });
+      }>(MUTATION, { input: { projectId, nodeId, body, summary, capturedAt } });
 
       const s = data.captureSession.session;
       const where = s.node ? `area ${s.node.title} [${s.node.path}]` : "the project";
