@@ -167,7 +167,7 @@ export class LoreClient {
       if (found.nodeByPath) return found.nodeByPath.id;
     } catch (err) {
       // nodeByPath returns a non-null NodeType, so a missing node raises
-      // "Node not found" rather than returning null — fall through to create.
+      // "Node not found" rather than returning null - fall through to create.
       if (!(err instanceof LoreError && /not found/i.test(err.message))) throw err;
     }
 

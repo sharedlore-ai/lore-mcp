@@ -1,7 +1,7 @@
 {
   "name": "@sharedlore/mcp",
   "version": "0.1.0",
-  "description": "SharedLore MCP server — a thin client over the lore-api GraphQL endpoint.",
+  "description": "SharedLore MCP server - a thin client over the lore-api GraphQL endpoint.",
   "type": "module",
   "bin": {
     "sharedlore-mcp": "dist/index.js"

@@ -13,7 +13,7 @@ const MOVE = `mutation Move($input: MoveNodeInput!) {
 export function registerManage(server: McpServer, client: LoreClient): void {
   server.tool(
     "lore_delete",
-    "Delete a node (and its children) by path or id. Irreversible — use to clean up mistaken or stale nodes.",
+    "Delete a node (and its children) by path or id. Irreversible - use to clean up mistaken or stale nodes.",
     {
       node: z.string().describe("Node path (e.g. bot/exits) or id to delete."),
       project: z.string().optional().describe("Project slug (defaults to .lorerc in cwd, then LORE_PROJECT)."),

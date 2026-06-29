@@ -61,7 +61,7 @@ export function registerProjects(server: McpServer, client: LoreClient): void {
       } else {
         lines.push("Projects:");
         for (const p of projects) {
-          lines.push(`- ${p.slug}  —  ${p.name}`);
+          lines.push(`- ${p.slug}  -  ${p.name}`);
         }
       }
 
@@ -98,7 +98,7 @@ export function registerProjects(server: McpServer, client: LoreClient): void {
 
       const p = data.createProject.project;
       return {
-        content: [{ type: "text", text: `Created project ${p.slug} — ${p.name}.` }],
+        content: [{ type: "text", text: `Created project ${p.slug} - ${p.name}.` }],
       };
     },
   );
